@@ -1,0 +1,25 @@
+let
+    CreateDateTable = (StartDate, EndDate) =>
+let
+    /*StartDate=#date(2012,1,1),
+    EndDate=#date(2013,12,31),*/
+    //Create lists of month and day names for use later on
+    //Find the number of days between the end date and the start date
+    NumberOfDates = (Duration.Days(EndDate-StartDate)+ 1) * 24 * 60 * 60,
+    StartDatetime = DateTime.From(StartDate),
+    //Generate a continuous list of dates from the start date to the end date
+    DateList = List.DateTimes(StartDatetime, NumberOfDates, #duration(0, 0, 0, 1)),
+    //Turn this list into a table
+    TableFromList = Table.FromList(DateList, Splitter.SplitByNothing(), {"Datetime"}, null, ExtraValues.Error),
+    //Caste the single column in the table to type date
+    ChangedType = Table.TransformColumnTypes(TableFromList,{{"Datetime", type datetime}}),
+    TimeKey = Table.AddColumn(ChangedType, "TimeKey", each Number.FromText(DateTime.ToText([Datetime],  [Format="yyyyMMddHHmmss", Culture="ja-JP"])),  type number),
+	Date = Table.AddColumn(TimeKey, "Date", each DateTime.Date([Datetime]),  type date),
+	Time = Table.AddColumn(Date, "Time", each DateTime.Time([Datetime]),  type time),
+    //Add a column that returns true if the date on rows is the current date
+    IsToday = Table.AddColumn(Time, "IsToday", each Date.IsInCurrentDay([Datetime]))
+
+in
+    IsToday
+in
+    CreateDateTable

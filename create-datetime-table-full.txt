@@ -1,0 +1,39 @@
+let
+    CreateDateTable = (StartDate, EndDate) =>
+let
+    /*StartDate=#date(2012,1,1),
+    EndDate=#date(2013,12,31),*/
+    //Create lists of month and day names for use later on
+    MonthList = {"1月", "2月", "3月", "4月", "5月", "6月"
+
+                 , "7月", "8月", "9月", "10月", "11月", "12月"},
+
+    DayList = {"日", "月", "火", "水", "木", "金", "土"},
+    //Find the number of days between the end date and the start date
+    NumberOfDates = (Duration.Days(EndDate-StartDate)+ 1) * 24,
+    StartDatetime = DateTime.From(StartDate),
+    //Generate a continuous list of dates from the start date to the end date
+    DateList = List.DateTimes(StartDatetime, NumberOfDates, #duration(0, 0, 0, 1)),
+    //Turn this list into a table
+    TableFromList = Table.FromList(DateList, Splitter.SplitByNothing(), {"Datetime"}, null, ExtraValues.Error),
+    //Caste the single column in the table to type date
+    ChangedType = Table.TransformColumnTypes(TableFromList,{{"Datetime", type datetime}}),
+    //Add custom columns for day of month, month number, year
+    DayOfMonth = Table.AddColumn(ChangedType, "DayOfMonth", each Date.Day([Datetime])),
+    MonthNumber = Table.AddColumn(DayOfMonth, "MonthNumberOfYear", each Date.Month([Datetime])),
+    Year = Table.AddColumn(MonthNumber, "Year", each Date.Year([Datetime])),
+    DayOfWeekNumber = Table.AddColumn(Year, "DayOfWeekNumber", each Date.DayOfWeek([Datetime])+1),
+    //Since Power Query doesn't have functions to return day or month names, 
+    //use the lists created earlier for this
+    MonthName = Table.AddColumn(DayOfWeekNumber, "MonthName", each MonthList{[MonthNumberOfYear]-1}),
+    DayName = Table.AddColumn(MonthName, "DayName", each DayList{[DayOfWeekNumber]-1}),
+    TimeKey = Table.AddColumn(DayName, "TimeKey", each Number.FromText(DateTime.ToText([Datetime],  [Format="yyyyMMddHHmmss", Culture="ja-JP"])),  type number),
+	Date = Table.AddColumn(TimeKey, "Date", each DateTime.Date([Datetime]),  type date),
+	Time = Table.AddColumn(Date, "Time", each DateTime.Time([Datetime]),  type time),
+    //Add a column that returns true if the date on rows is the current date
+    IsToday = Table.AddColumn(TimeKey, "IsToday", each Date.IsInCurrentDay([Datetime]))
+
+in
+    IsToday
+in
+    CreateDateTable
