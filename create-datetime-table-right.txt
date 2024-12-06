@@ -8,7 +8,7 @@ let
     NumberOfDates = (Duration.Days(EndDate-StartDate)+ 1) * 24 * 60 * 60,
     StartDatetime = DateTime.From(StartDate),
     //Generate a continuous list of dates from the start date to the end date
-    DateList = List.DateTimes(StartDatetime, NumberOfDates, #duration(0, 0, 0, 1)),
+    DateList = List.DateTimes(StartDatetime, NumberOfDates, #duration(0, 0, 30, 0)),
     //Turn this list into a table
     TableFromList = Table.FromList(DateList, Splitter.SplitByNothing(), {"Datetime"}, null, ExtraValues.Error),
     //Caste the single column in the table to type date
